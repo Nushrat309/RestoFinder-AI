@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
+from chat import chat
 
 app = FastAPI()
 
@@ -14,4 +16,16 @@ def read_root():
 def health_check():
     return {
         "status": "OK"
+    }
+
+
+class ChatRequest(BaseModel):
+    message: str
+
+
+@app.post("/chat")
+def chat_endpoint(request: ChatRequest):
+    response = chat(request.message)
+    return {
+        "response": response
     }
