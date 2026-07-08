@@ -136,7 +136,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                let errorMsg = `Server error (status: ${response.status})`;
+                try {
+                    const errData = await response.json();
+                    errorMsg = errData.detail || errorMsg;
+                } catch (_) {}
+                throw new Error(errorMsg);
             }
 
             const data = await response.json();
@@ -155,9 +160,15 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error contacting RestoFinder AI:', error);
             removeTypingIndicator();
+            
+            let messageToDisplay = error.message;
+            if (error.message.includes('Failed to fetch')) {
+                messageToDisplay = 'Connection error: I was unable to connect to the backend server. Please verify the FastAPI server is running on `http://localhost:8000`.';
+            }
+            
             appendMessage(
                 'assistant', 
-                '⚠️ **Connection error**: I was unable to connect to the backend server. Please verify the FastAPI server is running on `http://localhost:8000`.'
+                `⚠️ **Error**: ${messageToDisplay}`
             );
             // Remove the user message from history as it failed
             conversationHistory.pop();
