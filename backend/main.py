@@ -44,6 +44,8 @@ class ChatRequest(BaseModel):
 
 @app.post("/chat")
 def chat_endpoint(request: ChatRequest):
+    from fastapi import HTTPException
+    
     api_contents = []
     for msg in request.contents:
         parts_list = []
@@ -53,10 +55,21 @@ def chat_endpoint(request: ChatRequest):
             "role": msg.role,
             "parts": parts_list
         })
-    response = chat(api_contents)
-    return {
-        "response": response
-    }
+    
+    try:
+        response = chat(api_contents)
+        return {
+            "response": response
+        }
+    except Exception as e:
+        error_msg = str(e)
+        if "RESOURCE_EXHAUSTED" in error_msg or "quota" in error_msg.lower():
+            raise HTTPException(
+                status_code=429, 
+                detail="Gemini API Quota Exceeded. You have hit the limit (20 requests/day) for this free tier API key. Please check your API usage or wait a bit before trying again."
+            )
+        raise HTTPException(status_code=500, detail=f"AI Service Error: {error_msg}")
+
 
 
 
