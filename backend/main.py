@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -27,6 +29,21 @@ def health_check():
     return {
         "status": "OK"
     }
+
+
+@app.get("/api/restaurants")
+def get_restaurants():
+    try:
+        data_path = Path(__file__).parent / "data" / "restaurants.json"
+        with open(data_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to load restaurant data: {str(e)}"
+        )
 
 
 class MessagePart(BaseModel):

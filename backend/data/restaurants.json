@@ -1,0 +1,317 @@
+[
+  {
+    "id": "burger-lab",
+    "name": "Burger Lab",
+    "cuisine": "Burgers & Fast Food",
+    "location": "Dhanmondi",
+    "rating": 4.6,
+    "review_count": 128,
+    "price_range": "৳৳",
+    "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Burger+Lab+Dhanmondi+Dhaka",
+    "popular_items": ["Smoky Grill Burger", "Loaded Fries"],
+    "reviews": [
+      {
+        "user": "Anika R.",
+        "rating": 5,
+        "text": "The Smoky Grill Burger is hands down the best burger in Dhanmondi. Extremely juicy!"
+      },
+      {
+        "user": "Sajid M.",
+        "rating": 4,
+        "text": "Great loaded fries. Service was a bit slow on Friday night but the food made up for it."
+      }
+    ],
+    "menu": [
+      {
+        "id": "bl-smoky-grill",
+        "name": "Smoky Grill Burger",
+        "category": "Burgers",
+        "price": 280,
+        "description": "Charcoal-grilled juicy beef patty with smoky BBQ sauce, cheese, and caramelized onions.",
+        "image_url": "images/burger_lab_smoky.png",
+        "available": true,
+        "dietary_tags": ["Non-Veg"]
+      },
+      {
+        "id": "bl-cheese-blast",
+        "name": "Cheese Blast Burger",
+        "category": "Burgers",
+        "price": 350,
+        "description": "Double beef patty loaded with melted cheddar, mozzarella, and house special sauce.",
+        "image_url": "images/burger_lab_smoky.png",
+        "available": true,
+        "dietary_tags": ["Non-Veg"]
+      },
+      {
+        "id": "bl-loaded-fries",
+        "name": "Loaded Fries",
+        "category": "Sides",
+        "price": 220,
+        "description": "Crispy French fries topped with melted cheese, jalapenos, and minced beef.",
+        "image_url": "images/default_food.png",
+        "available": true,
+        "dietary_tags": ["Non-Veg"]
+      },
+      {
+        "id": "bl-garlic-mushrooms",
+        "name": "Garlic Mushrooms",
+        "category": "Sides",
+        "price": 180,
+        "description": "Sautéed mushrooms in garlic butter, fresh herbs, and a touch of white sauce.",
+        "image_url": "images/default_food.png",
+        "available": true,
+        "dietary_tags": ["Veg", "Gluten-Free"]
+      }
+    ]
+  },
+  {
+    "id": "takeout",
+    "name": "Takeout",
+    "cuisine": "Burgers & Fast Food",
+    "location": "Banani",
+    "rating": 4.5,
+    "review_count": 242,
+    "price_range": "৳৳",
+    "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Takeout+Banani+Dhaka",
+    "popular_items": ["Beef Cheese Delight", "Chicken Supreme"],
+    "reviews": [
+      {
+        "user": "Tamim H.",
+        "rating": 5,
+        "text": "Consistent taste as always. Beef Cheese Delight is my absolute favorite."
+      },
+      {
+        "user": "Faria Z.",
+        "rating": 4,
+        "text": "Burgers are huge and filling. Banani outlet is nicely decorated."
+      }
+    ],
+    "menu": [
+      {
+        "id": "to-beef-delight",
+        "name": "Beef Cheese Delight",
+        "category": "Burgers",
+        "price": 290,
+        "description": "Classic grilled beef burger with double cheese slice, fresh lettuce, and signature Takeout sauce.",
+        "image_url": "images/burger_lab_smoky.png",
+        "available": true,
+        "dietary_tags": ["Non-Veg"]
+      },
+      {
+        "id": "to-chicken-supreme",
+        "name": "Chicken Supreme",
+        "category": "Burgers",
+        "price": 320,
+        "description": "Deep fried crispy chicken breast, lettuce, tomato, cheese, and spicy mayo dressing.",
+        "image_url": "images/burger_lab_smoky.png",
+        "available": true,
+        "dietary_tags": ["Non-Veg"]
+      },
+      {
+        "id": "to-onion-rings",
+        "name": "Crispy Onion Rings",
+        "category": "Sides",
+        "price": 150,
+        "description": "Golden fried crispy onion rings served with sweet chilli sauce.",
+        "image_url": "images/default_food.png",
+        "available": true,
+        "dietary_tags": ["Veg"]
+      }
+    ]
+  },
+  {
+    "id": "sultans-dine",
+    "name": "Sultan's Dine",
+    "cuisine": "Traditional & Biryani",
+    "location": "Dhanmondi",
+    "rating": 4.8,
+    "review_count": 512,
+    "price_range": "৳৳",
+    "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Sultans+Dine+Dhanmondi+Dhaka",
+    "popular_items": ["Mutton Kacchi Biryani", "Borhani"],
+    "reviews": [
+      {
+        "user": "Nabil A.",
+        "rating": 5,
+        "text": "Best Kacchi Biryani in Dhaka. The mutton is so tender and falls off the bone."
+      },
+      {
+        "user": "Raisa K.",
+        "rating": 4.5,
+        "text": "Incredible taste, but the place is extremely crowded. Better to order home delivery."
+      }
+    ],
+    "menu": [
+      {
+        "id": "sd-kacchi-half",
+        "name": "Mutton Kacchi Biryani - Half",
+        "category": "Main Course",
+        "price": 380,
+        "description": "Traditional mutton kacchi biryani cooked with fragrant basmati rice, potatoes, and pure ghee.",
+        "image_url": "images/sultans_dine_kacchi.png",
+        "available": true,
+        "dietary_tags": ["Non-Veg", "Gluten-Free"]
+      },
+      {
+        "id": "sd-jali-kabab",
+        "name": "Jali Kabab",
+        "category": "Sides",
+        "price": 80,
+        "description": "Spiced minced beef patty coated in deep-fried egg net.",
+        "image_url": "images/default_food.png",
+        "available": true,
+        "dietary_tags": ["Non-Veg"]
+      },
+      {
+        "id": "sd-borhani",
+        "name": "Borhani",
+        "category": "Drinks",
+        "price": 70,
+        "description": "Traditional spiced yogurt drink blended with mint, mustard, and green chillies.",
+        "image_url": "images/default_food.png",
+        "available": true,
+        "dietary_tags": ["Veg", "Gluten-Free"]
+      },
+      {
+        "id": "sd-firni",
+        "name": "Firni",
+        "category": "Dessert",
+        "price": 80,
+        "description": "Traditional sweet rice pudding made with thickened milk, saffron, and nuts.",
+        "image_url": "images/default_food.png",
+        "available": true,
+        "dietary_tags": ["Veg", "Gluten-Free"]
+      }
+    ]
+  },
+  {
+    "id": "yum-cha-district",
+    "name": "Yum Cha District",
+    "cuisine": "Asian & Dumplings",
+    "location": "Banani",
+    "rating": 4.4,
+    "review_count": 96,
+    "price_range": "৳৳৳",
+    "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Yum+Cha+District+Banani+Dhaka",
+    "popular_items": ["Chicken Steamed Momo", "Schezwan Noodles"],
+    "reviews": [
+      {
+        "user": "Eshrat J.",
+        "rating": 4,
+        "text": "The momos are highly authentic and juicy. Nice selection of Asian street food."
+      },
+      {
+        "user": "Zeeshan T.",
+        "rating": 5,
+        "text": "Love their Schezwan noodles. Perfectly spiced and loaded with shrimp and chicken."
+      }
+    ],
+    "menu": [
+      {
+        "id": "yc-chicken-momo",
+        "name": "Chicken Steamed Momo",
+        "category": "Dumplings",
+        "price": 280,
+        "description": "6 pieces of juicy steamed dumplings stuffed with seasoned minced chicken and served with spicy dipping sauce.",
+        "image_url": "images/yum_cha_momo.png",
+        "available": true,
+        "dietary_tags": ["Non-Veg"]
+      },
+      {
+        "id": "yc-veg-momo",
+        "name": "Veg Steamed Momo",
+        "category": "Dumplings",
+        "price": 240,
+        "description": "6 pieces of steamed dumplings filled with cabbage, carrots, mushrooms, and spring onion.",
+        "image_url": "images/yum_cha_momo.png",
+        "available": true,
+        "dietary_tags": ["Veg"]
+      },
+      {
+        "id": "yc-schezwan-noodles",
+        "name": "Schezwan Noodles",
+        "category": "Noodles",
+        "price": 350,
+        "description": "Spicy wok-tossed noodles with chicken, shrimp, vegetables, and homemade Schezwan sauce.",
+        "image_url": "images/default_food.png",
+        "available": true,
+        "dietary_tags": ["Non-Veg"]
+      },
+      {
+        "id": "yc-chilli-chicken",
+        "name": "Chilli Chicken",
+        "category": "Main Course",
+        "price": 420,
+        "description": "Stir-fried boneless chicken cubes with bell peppers, onions, and green chillies in a soy sauce base.",
+        "image_url": "images/default_food.png",
+        "available": true,
+        "dietary_tags": ["Non-Veg"]
+      }
+    ]
+  },
+  {
+    "id": "coffee-bean",
+    "name": "The Coffee Bean & Tea Leaf",
+    "cuisine": "Café & Bakery",
+    "location": "Gulshan",
+    "rating": 4.3,
+    "review_count": 184,
+    "price_range": "৳৳৳",
+    "google_maps_url": "https://www.google.com/maps/search/?api=1&query=The+Coffee+Bean+Tea+Leaf+Gulshan+Dhaka",
+    "popular_items": ["Caramel Macchiato", "Chocolate Fudge Cake"],
+    "reviews": [
+      {
+        "user": "Rohan D.",
+        "rating": 4,
+        "text": "Great spot for working. Coffee is premium quality and the environment is very peaceful."
+      },
+      {
+        "user": "Kazi S.",
+        "rating": 4.5,
+        "text": "Chocolate Fudge Cake is rich and not overly sweet. Pair it with a double espresso!"
+      }
+    ],
+    "menu": [
+      {
+        "id": "cb-caramel-macchiato",
+        "name": "Caramel Macchiato",
+        "category": "Drinks",
+        "price": 360,
+        "description": "Freshly pulled espresso with steamed milk and vanilla syrup, topped with gourmet caramel drizzle.",
+        "image_url": "images/coffee_bean_latte.png",
+        "available": true,
+        "dietary_tags": ["Veg", "Gluten-Free"]
+      },
+      {
+        "id": "cb-fudge-cake",
+        "name": "Chocolate Fudge Cake",
+        "category": "Dessert",
+        "price": 280,
+        "description": "A slice of rich, moist chocolate cake layered with decadent fudge frosting.",
+        "image_url": "images/default_food.png",
+        "available": true,
+        "dietary_tags": ["Veg"]
+      },
+      {
+        "id": "cb-avocado-salad",
+        "name": "Chicken Avocado Salad",
+        "category": "Salad",
+        "price": 450,
+        "description": "Grilled chicken breast, fresh mixed lettuce, cherry tomatoes, cucumbers, avocado slices, and honey mustard dressing.",
+        "image_url": "images/default_food.png",
+        "available": true,
+        "dietary_tags": ["Non-Veg", "Gluten-Free"]
+      },
+      {
+        "id": "cb-waffles",
+        "name": "Classic Waffles",
+        "category": "Breakfast",
+        "price": 320,
+        "description": "Freshly baked Belgian waffles served with whipped butter, berries, and maple syrup.",
+        "image_url": "images/default_food.png",
+        "available": false,
+        "dietary_tags": ["Veg"]
+      }
+    ]
+  }
+]
