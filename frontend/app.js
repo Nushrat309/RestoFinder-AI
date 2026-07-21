@@ -824,6 +824,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     ];
 
+    const STREAM_API_URL = `${BASE_URL}/chat/stream`;
+
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -843,7 +845,7 @@ document.addEventListener('DOMContentLoaded', () => {
         appendTypingIndicator();
 
         try {
-            const response = await fetch(API_URL, {
+            const response = await fetch(STREAM_API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -860,15 +862,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(errorMsg);
             }
 
-            const data = await response.json();
             removeTypingIndicator();
-            const botResponse = data.response || 'I did not receive a response. Please try again.';
-            appendMessage('assistant', botResponse);
 
-            conversationHistory.push({
-                role: 'model',
-                parts: [{ text: botResponse }]
-            });
+            const messageWrapper = appendMessage('assistant', '');
+            const contentParagraph = messageWrapper.querySelector('.message-bubble p');
+
+            let accumulatedText = '';
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let buffer = '';
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (trimmed.startsWith('data: ')) {
+                        const jsonStr = trimmed.slice(6);
+                        if (!jsonStr) continue;
+                        try {
+                            const data = JSON.parse(jsonStr);
+                            if (data.error) {
+                                throw new Error(data.error);
+                            }
+                            if (data.token) {
+                                accumulatedText += data.token;
+                                contentParagraph.innerHTML = formatResponseText(accumulatedText);
+                                scrollToBottom();
+                            }
+                        } catch (parseErr) {
+                            if (parseErr.message && (parseErr.message.includes('Quota') || parseErr.message.includes('Service Error'))) {
+                                throw parseErr;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (accumulatedText) {
+                conversationHistory.push({
+                    role: 'model',
+                    parts: [{ text: accumulatedText }]
+                });
+            }
 
         } catch (error) {
             console.error('Error contacting RestoFinder AI:', error);
