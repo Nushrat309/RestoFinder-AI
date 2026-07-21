@@ -12,16 +12,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Global state
     let allRestaurants = [];
     let activeCategory = 'all';
+    let activeViewTab = 'map'; // 'map', 'restaurants', 'food', 'favorites'
+
+    // Map instances
+    let mapInstance = null;
+    let mapMarkers = [];
 
     // Elements
+    const mapContainer = document.getElementById('dhaka-map');
     const restaurantGrid = document.getElementById('restaurant-grid');
+    const foodSearchContainer = document.getElementById('food-search-container');
+    const foodSearchGrid = document.getElementById('food-search-grid');
     const favoritesContainer = document.getElementById('favorites-container');
     const favRestaurantsGrid = document.getElementById('fav-restaurants-grid');
     const favItemsGrid = document.getElementById('fav-items-grid');
     const favCountSpan = document.getElementById('fav-count');
 
     const searchInput = document.getElementById('search-input');
+    const cityFilter = document.getElementById('city-filter');
     const locationFilter = document.getElementById('location-filter');
+    const cuisineFilter = document.getElementById('cuisine-filter');
     const priceRange = document.getElementById('price-range');
     const priceVal = document.getElementById('price-val');
     const vegFilter = document.getElementById('veg-filter');
@@ -30,10 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterToggleBtn = document.getElementById('filter-toggle-btn');
     const filtersDrawer = document.getElementById('filters-drawer');
     const categoryPills = document.getElementById('category-pills');
+    const areaChipsContainer = document.getElementById('area-chips-container');
 
-    // Tabs
+    // View Navigation Tabs
+    const mapViewTab = document.getElementById('map-view-tab');
     const exploreRestaurantsTab = document.getElementById('explore-restaurants-tab');
+    const foodSearchTab = document.getElementById('food-search-tab');
     const favoritesTab = document.getElementById('favorites-tab');
+
+    // Mobile tabs
     const tabChatBtn = document.getElementById('tab-chat-btn');
     const tabExploreBtn = document.getElementById('tab-explore-btn');
     const chatPane = document.getElementById('chat-pane');
@@ -48,6 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalRating = document.getElementById('modal-rating');
     const modalReviewsCount = document.getElementById('modal-reviews-count');
     const modalPriceRange = document.getElementById('modal-price-range');
+    const modalHours = document.getElementById('modal-hours');
+    const modalContact = document.getElementById('modal-contact');
     const modalFavBtn = document.getElementById('modal-fav-btn');
     const modalMapsLink = document.getElementById('modal-maps-link');
     const modalReviewsList = document.getElementById('modal-reviews-list');
@@ -78,7 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
         saveFavorites(favs);
         applyFilters(); // Re-render to update the heart icon states
         
-        // If current modal is open and shows this restaurant, update modal fav button state
         if (currentSelectedRestaurant && currentSelectedRestaurant.id === id) {
             const isFav = favs.restaurants.includes(id);
             modalFavBtn.classList.toggle('is-fav', isFav);
@@ -95,11 +111,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         saveFavorites(favs);
         
-        // Update modals and items grid
         if (currentSelectedRestaurant) {
             renderModalMenuItems(currentSelectedRestaurant.menu);
         }
         updateFavoritesUI();
+        if (activeViewTab === 'food') {
+            applyFilters();
+        }
     }
 
     function isFavoriteRestaurant(id) {
@@ -110,9 +128,71 @@ document.addEventListener('DOMContentLoaded', () => {
         return getFavorites().items.includes(id);
     }
 
-    // Expose toggle functions globally for inline HTML onclick attributes
+    // Expose toggle functions globally
     window.toggleFavoriteRestaurant = toggleFavoriteRestaurant;
     window.toggleFavoriteItem = toggleFavoriteItem;
+
+    // --- Leaflet Interactive Map Logic ---
+    function initMap() {
+        if (!mapContainer || typeof L === 'undefined') return;
+        if (mapInstance) return;
+
+        // Initialize Leaflet map centered at Dhaka
+        mapInstance = L.map('dhaka-map', {
+            center: [23.7803, 90.4125],
+            zoom: 12,
+            zoomControl: true
+        });
+
+        // CartoDB Dark Matter tiles
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(mapInstance);
+    }
+
+    function updateMapMarkers(restaurants) {
+        if (!mapInstance) initMap();
+        if (!mapInstance) return;
+
+        // Clear existing markers
+        mapMarkers.forEach(m => mapInstance.removeLayer(m));
+        mapMarkers = [];
+
+        if (!restaurants || restaurants.length === 0) return;
+
+        const bounds = [];
+        restaurants.forEach(rest => {
+            const lat = rest.coordinates?.lat || 23.7803;
+            const lng = rest.coordinates?.lng || 90.4125;
+            bounds.push([lat, lng]);
+
+            const popupContent = `
+                <div class="map-popup-card">
+                    <div class="map-popup-title">${rest.name}</div>
+                    <div class="map-popup-cuisine">📍 ${rest.location} &bull; ${rest.cuisine}</div>
+                    <div class="map-popup-badge">⭐ ${rest.rating} (${rest.review_count} reviews) &bull; ${rest.price_range}</div>
+                    <button class="map-popup-btn" onclick="openMenuModal('${rest.id}')">📂 Explore Menu</button>
+                </div>
+            `;
+
+            const marker = L.marker([lat, lng])
+                .addTo(mapInstance)
+                .bindPopup(popupContent);
+            
+            mapMarkers.push(marker);
+        });
+
+        // Auto zoom/fit bounds smoothly
+        if (bounds.length > 0) {
+            if (bounds.length === 1) {
+                mapInstance.setView(bounds[0], 14, { animate: true });
+            } else {
+                mapInstance.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+            }
+        }
+    }
 
     // --- Fetch Data ---
     async function loadRestaurants() {
@@ -120,35 +200,50 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(RESTAURANTS_API);
             if (!res.ok) throw new Error('Failed to fetch restaurants');
             allRestaurants = await res.json();
+            initMap();
             applyFilters();
             updateFavoritesUI();
         } catch (err) {
             console.error('Error loading restaurants:', err);
-            restaurantGrid.innerHTML = `
-                <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">
-                    <p>⚠️ Failed to load restaurant database. Make sure the backend FastAPI server is running.</p>
-                </div>
-            `;
+            if (restaurantGrid) {
+                restaurantGrid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <p>⚠️ Failed to load restaurant database. Make sure the backend FastAPI server is running.</p>
+                    </div>
+                `;
+            }
         }
     }
 
     // --- Filtering Logic ---
     function applyFilters() {
         const query = searchInput.value.trim().toLowerCase();
-        const location = locationFilter.value;
+        const selectedCity = cityFilter ? cityFilter.value : 'all';
+        const location = locationFilter ? locationFilter.value : 'all';
+        const selectedCuisine = cuisineFilter ? cuisineFilter.value : 'all';
         const maxBudget = parseInt(priceRange.value, 10);
         const vegOnly = vegFilter.checked;
         const gfOnly = glutenFilter.checked;
         const inStockOnly = availableFilter.checked;
 
         const filtered = allRestaurants.filter(rest => {
-            // 1. Location Filter
-            if (location !== 'all' && rest.location !== location) return false;
+            // 0. City Filter
+            if (selectedCity !== 'all' && rest.city && rest.city.toLowerCase() !== selectedCity.toLowerCase()) {
+                return false;
+            }
 
-            // 2. Item-based tags and budget filters
-            // Check if restaurant has any items matching budget/dietary conditions
+            // 1. Location Filter
+            if (location !== 'all' && (rest.location || rest.area) !== location) return false;
+
+            // 2. Cuisine Filter
+            if (selectedCuisine !== 'all') {
+                if (!rest.cuisine.toLowerCase().includes(selectedCuisine.toLowerCase())) return false;
+            }
+
+            // 3. Item-based tags and budget filters
             const matchesCategoryAndTags = rest.menu.some(item => {
-                const matchesCat = activeCategory === 'all' || item.category === activeCategory;
+                const matchesCat = activeCategory === 'all' || 
+                    item.category.toLowerCase().includes(activeCategory.toLowerCase());
                 const matchesPrice = item.price <= maxBudget;
                 const matchesVeg = !vegOnly || item.dietary_tags.includes('Veg');
                 const matchesGf = !gfOnly || item.dietary_tags.includes('Gluten-Free');
@@ -159,11 +254,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!matchesCategoryAndTags) return false;
 
-            // 3. Search query filter (matches restaurant name, cuisine, location, or menu item names)
+            // 4. Search query filter
             if (query) {
                 const matchesRestInfo = rest.name.toLowerCase().includes(query) ||
                                        rest.cuisine.toLowerCase().includes(query) ||
-                                       rest.location.toLowerCase().includes(query);
+                                       (rest.location || rest.area || '').toLowerCase().includes(query) ||
+                                       (rest.city || '').toLowerCase().includes(query);
                 
                 const matchesMenu = rest.menu.some(item => 
                     item.name.toLowerCase().includes(query) || 
@@ -176,33 +272,42 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         });
 
+        // Render current view mode
         renderRestaurants(filtered);
+        renderFoodSearch(filtered);
+        updateMapMarkers(filtered);
     }
 
     // Render Restaurant Cards
     function renderRestaurants(restaurants) {
+        if (!restaurantGrid) return;
         restaurantGrid.innerHTML = '';
         if (restaurants.length === 0) {
             restaurantGrid.innerHTML = `
                 <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">
-                    <p>🔍 No restaurants match your current filters.</p>
+                    <p>🔍 No restaurants match your current area or criteria.</p>
                 </div>
             `;
             return;
         }
 
-        restaurants.forEach(rest => {
+        // Render top 80 restaurants for maximum UI responsiveness
+        const displayLimit = restaurants.slice(0, 80);
+
+        displayLimit.forEach(rest => {
             const card = document.createElement('div');
             card.className = 'restaurant-card animate-fade-in';
             
             const isFav = isFavoriteRestaurant(rest.id);
 
-            // Get a main food image for the card
             let mainImg = 'images/default_food.png';
             const hasMainImage = rest.menu.find(item => item.image_url && !item.image_url.includes('default'));
             if (hasMainImage) {
                 mainImg = hasMainImage.image_url;
             }
+
+            const delTag = rest.delivery_available ? `<span class="service-tag">🛵 Delivery</span>` : '';
+            const dineTag = rest.dine_in_available ? `<span class="service-tag">🍽️ Dine-in</span>` : '';
 
             card.innerHTML = `
                 <div class="restaurant-card-img-wrapper">
@@ -217,8 +322,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="restaurant-card-body">
                     <h3 class="restaurant-card-title">${rest.name}</h3>
                     <p class="restaurant-card-cuisine">${rest.cuisine}</p>
-                    <p class="restaurant-card-location">📍 ${rest.location}</p>
-                    <div class="restaurant-card-footer">
+                    <p class="restaurant-card-location">📍 ${rest.location || rest.area}, ${rest.city || 'Dhaka'}</p>
+                    <div class="badge-services">${delTag}${dineTag}</div>
+                    <div class="restaurant-card-footer" style="margin-top: 8px;">
                         <span class="restaurant-price-badge">${rest.price_range}</span>
                         <button class="btn-explore-menu" onclick="openMenuModal('${rest.id}')">Explore Menu</button>
                     </div>
@@ -228,12 +334,93 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Render Direct Food Search View Grid
+    function renderFoodSearch(restaurants) {
+        if (!foodSearchGrid) return;
+        foodSearchGrid.innerHTML = '';
+
+        const query = searchInput.value.trim().toLowerCase();
+        const maxBudget = parseInt(priceRange.value, 10);
+        const vegOnly = vegFilter.checked;
+        const gfOnly = glutenFilter.checked;
+        const inStockOnly = availableFilter.checked;
+
+        const allMatchingItems = [];
+
+        restaurants.forEach(rest => {
+            rest.menu.forEach(item => {
+                const matchesCat = activeCategory === 'all' || 
+                    item.category.toLowerCase().includes(activeCategory.toLowerCase());
+                const matchesPrice = item.price <= maxBudget;
+                const matchesVeg = !vegOnly || item.dietary_tags.includes('Veg');
+                const matchesGf = !gfOnly || item.dietary_tags.includes('Gluten-Free');
+                const matchesStock = !inStockOnly || item.available;
+
+                let matchesSearch = true;
+                if (query) {
+                    matchesSearch = item.name.toLowerCase().includes(query) ||
+                                 item.category.toLowerCase().includes(query) ||
+                                 item.description.toLowerCase().includes(query) ||
+                                 rest.name.toLowerCase().includes(query) ||
+                                 rest.location.toLowerCase().includes(query);
+                }
+
+                if (matchesCat && matchesPrice && matchesVeg && matchesGf && matchesStock && matchesSearch) {
+                    allMatchingItems.push({ item, rest });
+                }
+            });
+        });
+
+        if (allMatchingItems.length === 0) {
+            foodSearchGrid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">
+                    <p>🍕 No food items match your search or filter requirements.</p>
+                </div>
+            `;
+            return;
+        }
+
+        allMatchingItems.forEach(({ item, rest }) => {
+            const card = document.createElement('div');
+            card.className = 'menu-item-card animate-fade-in';
+
+            const isFav = isFavoriteItem(item.id);
+            const tagsHtml = item.dietary_tags.map(t => 
+                `<span class="tag-diet ${t.toLowerCase().replace(' ', '-')}">${t}</span>`
+            ).join('');
+
+            card.innerHTML = `
+                <div class="menu-item-img-wrapper">
+                    <span class="stock-badge ${item.available ? 'in-stock' : 'out-of-stock'}">
+                        ${item.available ? 'In Stock' : 'Out of Stock'}
+                    </span>
+                    <img src="${item.image_url}" alt="${item.name}" class="menu-item-img" onerror="this.src='images/default_food.png'" />
+                </div>
+                <div class="menu-item-info">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <h4 class="menu-item-name">${item.name}</h4>
+                        <button class="item-fav-btn ${isFav ? 'is-fav' : ''}" onclick="toggleFavoriteItem('${item.id}')" title="Save Favorite">
+                            ${isFav ? '💖' : '🖤'}
+                        </button>
+                    </div>
+                    <div class="menu-item-tags">${tagsHtml}</div>
+                    <p class="menu-item-desc">${item.description}</p>
+                    <p style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 8px;">Served at: <a href="javascript:void(0)" onclick="openMenuModal('${rest.id}')" style="color: var(--accent); text-decoration:none; font-weight:600;">${rest.name} (📍 ${rest.location})</a></p>
+                    <div class="menu-item-meta">
+                        <span class="menu-item-price">৳ ${item.price}</span>
+                    </div>
+                </div>
+            `;
+            foodSearchGrid.appendChild(card);
+        });
+    }
+
     // --- Favorites UI Update ---
     function updateFavoritesUI() {
         const favs = getFavorites();
-        favCountSpan.innerText = favs.restaurants.length + favs.items.length;
+        if (favCountSpan) favCountSpan.innerText = favs.restaurants.length + favs.items.length;
 
-        // Clear grids
+        if (!favRestaurantsGrid || !favItemsGrid) return;
         favRestaurantsGrid.innerHTML = '';
         favItemsGrid.innerHTML = '';
 
@@ -336,6 +523,8 @@ document.addEventListener('DOMContentLoaded', () => {
         modalRating.innerText = rest.rating;
         modalReviewsCount.innerText = rest.review_count;
         modalPriceRange.innerText = rest.price_range;
+        if (modalHours) modalHours.innerText = rest.opening_hours || '10:00 AM - 11:00 PM';
+        if (modalContact) modalContact.innerText = rest.contact || '+880 1700-000000';
         
         // Maps link
         modalMapsLink.href = rest.google_maps_url;
@@ -346,18 +535,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Populate reviews list
         modalReviewsList.innerHTML = '';
-        rest.reviews.forEach(rev => {
-            const revCard = document.createElement('div');
-            revCard.className = 'review-card';
-            revCard.innerHTML = `
-                <div class="review-user">
-                    <span>${rev.user}</span>
-                    <span style="color:#fbbf24;">⭐ ${rev.rating}</span>
-                </div>
-                <p class="review-text">"${rev.text}"</p>
-            `;
-            modalReviewsList.appendChild(revCard);
-        });
+        if (rest.reviews && rest.reviews.length > 0) {
+            rest.reviews.forEach(rev => {
+                const revCard = document.createElement('div');
+                revCard.className = 'review-card';
+                revCard.innerHTML = `
+                    <div class="review-user">
+                        <span>${rev.user}</span>
+                        <span style="color:#fbbf24;">⭐ ${rev.rating}</span>
+                    </div>
+                    <p class="review-text">"${rev.text}"</p>
+                `;
+                modalReviewsList.appendChild(revCard);
+            });
+        }
 
         // Reset search field
         modalMenuSearch.value = '';
@@ -396,8 +587,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 `<span class="tag-diet ${t.toLowerCase().replace(' ', '-')}">${t}</span>`
             ).join('');
 
+            const popBadgeHtml = item.popularity_badge && item.popularity_badge !== 'Regular' 
+                ? `<span class="badge-popularity ${item.popularity_badge.toLowerCase().replace(' ', '-')}">${item.popularity_badge}</span>`
+                : '';
+
             card.innerHTML = `
-                <div class="menu-item-img-wrapper">
+                <div class="menu-item-img-wrapper" style="position:relative;">
+                    ${popBadgeHtml}
                     <span class="stock-badge ${item.available ? 'in-stock' : 'out-of-stock'}">
                         ${item.available ? 'In Stock' : 'Out of Stock'}
                     </span>
@@ -421,7 +617,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Expose openMenuModal globally so it can be called from chat buttons
+    // Expose openMenuModal globally
     window.openMenuModal = openMenuModal;
 
     // Search filter within modal menu
@@ -446,7 +642,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Search & Filters Event Listeners ---
     searchInput.addEventListener('input', applyFilters);
-    locationFilter.addEventListener('change', applyFilters);
+    if (cityFilter) cityFilter.addEventListener('change', applyFilters);
+    if (locationFilter) locationFilter.addEventListener('change', () => {
+        // Sync active chip
+        const loc = locationFilter.value;
+        if (areaChipsContainer) {
+            areaChipsContainer.querySelectorAll('.area-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.dataset.area === loc);
+            });
+        }
+        applyFilters();
+    });
+    if (cuisineFilter) cuisineFilter.addEventListener('change', applyFilters);
     priceRange.addEventListener('input', () => {
         priceVal.innerText = priceRange.value;
         applyFilters();
@@ -471,21 +678,46 @@ document.addEventListener('DOMContentLoaded', () => {
         applyFilters();
     });
 
-    // --- Sidebar navigation tabs event handlers ---
-    exploreRestaurantsTab.addEventListener('click', () => {
-        exploreRestaurantsTab.classList.add('active');
-        favoritesTab.classList.remove('active');
-        restaurantGrid.classList.remove('hidden');
-        favoritesContainer.classList.add('hidden');
-    });
+    // Area quick chips events
+    if (areaChipsContainer) {
+        areaChipsContainer.addEventListener('click', (e) => {
+            const chip = e.target.closest('.area-chip');
+            if (!chip) return;
 
-    favoritesTab.addEventListener('click', () => {
-        favoritesTab.classList.add('active');
-        exploreRestaurantsTab.classList.remove('active');
-        restaurantGrid.classList.add('hidden');
-        favoritesContainer.classList.remove('hidden');
-        updateFavoritesUI();
-    });
+            areaChipsContainer.querySelectorAll('.area-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            
+            const area = chip.dataset.area;
+            if (locationFilter) locationFilter.value = area;
+            applyFilters();
+        });
+    }
+
+    // --- Explorer Navigation Views Switching ---
+    function setExplorerView(view) {
+        activeViewTab = view;
+        
+        mapViewTab.classList.toggle('active', view === 'map');
+        exploreRestaurantsTab.classList.toggle('active', view === 'restaurants');
+        foodSearchTab.classList.toggle('active', view === 'food');
+        favoritesTab.classList.toggle('active', view === 'favorites');
+
+        mapContainer.classList.toggle('hidden', view !== 'map');
+        restaurantGrid.classList.toggle('hidden', view !== 'restaurants');
+        foodSearchContainer.classList.toggle('hidden', view !== 'food');
+        favoritesContainer.classList.toggle('hidden', view !== 'favorites');
+
+        if (view === 'map' && mapInstance) {
+            setTimeout(() => mapInstance.invalidateSize(), 150);
+        } else if (view === 'favorites') {
+            updateFavoritesUI();
+        }
+    }
+
+    mapViewTab.addEventListener('click', () => setExplorerView('map'));
+    exploreRestaurantsTab.addEventListener('click', () => setExplorerView('restaurants'));
+    foodSearchTab.addEventListener('click', () => setExplorerView('food'));
+    favoritesTab.addEventListener('click', () => setExplorerView('favorites'));
 
     // --- Mobile tab navigation handlers ---
     tabChatBtn.addEventListener('click', () => {
@@ -500,40 +732,31 @@ document.addEventListener('DOMContentLoaded', () => {
         tabChatBtn.classList.remove('active');
         explorerPane.classList.add('active');
         chatPane.classList.remove('active');
+        if (activeViewTab === 'map' && mapInstance) {
+            setTimeout(() => mapInstance.invalidateSize(), 150);
+        }
     });
 
     // --- Chat logic ---
-
-    // Enhanced parser to support: bold (**text**), links ([text](url)), newlines (\n), and custom explore menu ([Explore Menu: id])
     function formatResponseText(text) {
         if (!text) return '';
-        // Escape HTML
         let formatted = text
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
         
-        // Convert markdown bold (**text**) to strong tags
         formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        
-        // Convert custom menu button [Explore Menu: restaurant-id] to an actual clickable button
         formatted = formatted.replace(/\[Explore Menu:\s*(.*?)\]/g, '<button class="chat-explore-menu-btn" onclick="openMenuModal(\'$1\')">📂 Explore Menu</button>');
-
-        // Convert markdown links [text](url) to anchor tags
         formatted = formatted.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="maps-link">🔗 $1</a>');
-        
-        // Convert newlines to breaks
         formatted = formatted.replace(/\n/g, '<br>');
 
         return formatted;
     }
 
-    // Scroll to the bottom of the chat container
     function scrollToBottom() {
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    // Append a message wrapper to the chat
     function appendMessage(sender, text) {
         const wrapper = document.createElement('div');
         wrapper.classList.add('message-wrapper', sender, 'animate-fade-in');
@@ -557,7 +780,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return wrapper;
     }
 
-    // Append typing indicator bubble
     function appendTypingIndicator() {
         const wrapper = document.createElement('div');
         wrapper.classList.add('message-wrapper', 'assistant', 'animate-fade-in');
@@ -588,7 +810,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return wrapper;
     }
 
-    // Remove typing indicator bubble
     function removeTypingIndicator() {
         const indicator = document.getElementById('typing-indicator-wrapper');
         if (indicator) {
@@ -599,32 +820,26 @@ document.addEventListener('DOMContentLoaded', () => {
     let conversationHistory = [
         {
             role: "model",
-            parts: [{ text: "Welcome! I am RestoFinder AI, your personal dining assistant. Ask me for recommendations like \"Best burgers under ৳300 in Dhanmondi\" or search menu items interactively on the right pane! 🍔🍕🍣" }]
+            parts: [{ text: "Welcome! I am RestoFinder AI, your personal Dhaka Dining Assistant. Ask me for recommendations like \"Best Kacchi Biryani under ৳400 in Old Dhaka\" or search restaurants on the interactive map! 🗺️🍔🍛" }]
         }
     ];
 
-    // Handle Form Submission
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const message = userInput.value.trim();
         if (!message) return;
 
-        // Clear input & disable controls
         userInput.value = '';
         userInput.disabled = true;
         sendButton.disabled = true;
 
-        // Add user message to UI
         appendMessage('user', message);
-
-        // Add user message to history
         conversationHistory.push({
             role: 'user',
             parts: [{ text: message }]
         });
 
-        // Add typing indicator
         appendTypingIndicator();
 
         try {
@@ -646,13 +861,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            
-            // Remove typing indicator & show response
             removeTypingIndicator();
             const botResponse = data.response || 'I did not receive a response. Please try again.';
             appendMessage('assistant', botResponse);
 
-            // Add bot response to history
             conversationHistory.push({
                 role: 'model',
                 parts: [{ text: botResponse }]
@@ -671,10 +883,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 'assistant', 
                 `⚠️ **Error**: ${messageToDisplay}`
             );
-            // Remove the user message from history as it failed
             conversationHistory.pop();
         } finally {
-            // Re-enable input & controls
             userInput.disabled = false;
             sendButton.disabled = false;
             userInput.focus();
@@ -693,7 +903,6 @@ document.addEventListener('DOMContentLoaded', () => {
             userInput.value = query;
             chatForm.dispatchEvent(new Event('submit'));
             
-            // On mobile, automatically focus chat pane
             if (window.innerWidth <= 900) {
                 tabChatBtn.click();
             }

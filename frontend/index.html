@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RestoFinder AI - Your Premium Dining & Menu Guide</title>
-    <meta name="description" content="Discover, explore menus, find favorites, and navigate to the best dining spots in Dhaka with AI recommendations.">
+    <title>RestoFinder AI - Dhaka Restaurant & Food Explorer</title>
+    <meta name="description" content="Discover, explore maps, search foods, find favorites, and navigate to the best dining spots across 37+ Dhaka areas with AI recommendations.">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet.js Interactive Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="style.css">
 </head>
@@ -20,13 +23,13 @@
                 <span class="logo-icon">🍽️</span>
                 <div class="logo-text">
                     <h1>RestoFinder <span class="accent-text">AI</span></h1>
-                    <p class="subtitle">AI Restaurant & Menu Recommender</p>
+                    <p class="subtitle">Dhaka Restaurant & Food Explorer</p>
                 </div>
             </div>
             <!-- Mobile navigation tabs -->
             <div class="mobile-tabs">
-                <button class="mobile-tab-btn active" id="tab-chat-btn">💬 Chat</button>
-                <button class="mobile-tab-btn" id="tab-explore-btn">🔍 Explore</button>
+                <button class="mobile-tab-btn active" id="tab-chat-btn">💬 AI Chat</button>
+                <button class="mobile-tab-btn" id="tab-explore-btn">🗺️ Explorer</button>
             </div>
             <div class="status-indicator">
                 <span class="status-dot"></span>
@@ -43,17 +46,17 @@
                     <div class="message-wrapper assistant animate-fade-in">
                         <div class="avatar">🤖</div>
                         <div class="message-bubble">
-                            <p>Welcome! I am <strong>RestoFinder AI</strong>, your personal dining assistant. Ask me for recommendations like <em>"Best burgers under ৳300 in Dhanmondi"</em> or search menu items interactively on the right pane! 🍔🍕🍣</p>
+                            <p>Welcome! I am <strong>RestoFinder AI</strong>, your Dhaka Dining & Food Assistant. Ask me for recommendations like <em>"Best Kacchi Biryani under ৳400 in Old Dhaka"</em> or search restaurants on the interactive Dhaka Map! 🗺️🍔🍛 sushi</p>
                         </div>
                     </div>
                 </main>
                 
                 <!-- Quick Suggestions Chips -->
                 <div class="suggestion-chips">
-                    <button class="chip-btn" data-query="Best burgers under ৳300 near Dhanmondi">🍔 Burgers under ৳300 (Dhanmondi)</button>
-                    <button class="chip-btn" data-query="Are there any vegetarian options near Gulshan?">🥗 Vegetarian in Gulshan</button>
-                    <button class="chip-btn" data-query="Recommend traditional mutton kacchi biryani">🍛 Sultans Dine Kacchi</button>
-                    <button class="chip-btn" data-query="Show me Asian momos or dumplings in Banani">🥟 Momos in Banani</button>
+                    <button class="chip-btn" data-query="Best Kacchi Biryani in Old Dhaka under ৳400">🍛 Kacchi in Old Dhaka</button>
+                    <button class="chip-btn" data-query="Top burger spots in Dhanmondi under ৳300">🍔 Burgers in Dhanmondi</button>
+                    <button class="chip-btn" data-query="Recommend cafes for working in Gulshan or Banani">☕ Coffee in Gulshan</button>
+                    <button class="chip-btn" data-query="Steak or BBQ in Baridhara or Mirpur">🥩 BBQ & Steaks</button>
                 </div>
 
                 <!-- Input Area -->
@@ -62,7 +65,7 @@
                         <input 
                             type="text" 
                             id="user-input" 
-                            placeholder="Type budget, cravings, or dietary needs..." 
+                            placeholder="Type area, dish (e.g. Kacchi, Burger), budget..." 
                             autocomplete="off"
                             required
                         />
@@ -77,19 +80,39 @@
 
             <!-- Right Pane: Restaurant & Menu Explorer -->
             <div class="pane explorer-pane" id="explorer-pane">
-                <!-- Explorer Navigation -->
+                <!-- Explorer Navigation Tabs -->
                 <div class="explorer-nav">
                     <div class="tab-selectors">
-                        <button class="explorer-tab-btn active" id="explore-restaurants-tab">All Restaurants</button>
-                        <button class="explorer-tab-btn" id="favorites-tab">My Favorites (<span id="fav-count">0</span>)</button>
+                        <button class="explorer-tab-btn active" id="map-view-tab">🗺️ Interactive Map</button>
+                        <button class="explorer-tab-btn" id="explore-restaurants-tab">🍽️ All Restaurants</button>
+                        <button class="explorer-tab-btn" id="food-search-tab">🍕 Food Search</button>
+                        <button class="explorer-tab-btn" id="favorites-tab">💖 Favorites (<span id="fav-count">0</span>)</button>
                     </div>
                 </div>
 
-                <!-- Search and Filters Section -->
+                <!-- Quick Dhaka Area Selector Chips -->
+                <div class="area-chips-container" id="area-chips-container">
+                    <span class="area-label">📍 Popular Zones:</span>
+                    <div class="area-chips-scroll">
+                        <button class="area-chip active" data-area="all">All Dhaka</button>
+                        <button class="area-chip" data-area="Dhanmondi">Dhanmondi</button>
+                        <button class="area-chip" data-area="Gulshan">Gulshan</button>
+                        <button class="area-chip" data-area="Banani">Banani</button>
+                        <button class="area-chip" data-area="Uttara">Uttara</button>
+                        <button class="area-chip" data-area="Mirpur">Mirpur</button>
+                        <button class="area-chip" data-area="Mohammadpur">Mohammadpur</button>
+                        <button class="area-chip" data-area="Bashundhara R/A">Bashundhara R/A</button>
+                        <button class="area-chip" data-area="Old Dhaka">Old Dhaka</button>
+                        <button class="area-chip" data-area="Khilgaon">Khilgaon</button>
+                        <button class="area-chip" data-area="Wari">Wari</button>
+                    </div>
+                </div>
+
+                <!-- Search and Filters Bar -->
                 <div class="search-filter-container">
                     <div class="search-box">
                         <span class="search-icon">🔍</span>
-                        <input type="text" id="search-input" placeholder="Search restaurants, cuisines, or dishes..." />
+                        <input type="text" id="search-input" placeholder="Search area, dish (Burger, Kacchi, Pizza...), cuisine..." />
                     </div>
                     
                     <button class="filter-toggle-btn" id="filter-toggle-btn">
@@ -101,18 +124,76 @@
                 <div class="filters-drawer" id="filters-drawer">
                     <div class="filter-row">
                         <div class="filter-group">
-                            <label for="location-filter">Location</label>
-                            <select id="location-filter">
-                                <option value="all">All Locations</option>
-                                <option value="Dhanmondi">Dhanmondi</option>
-                                <option value="Banani">Banani</option>
-                                <option value="Gulshan">Gulshan</option>
+                            <label for="city-filter">Select City</label>
+                            <select id="city-filter">
+                                <option value="all">All Cities (500+ Spots)</option>
+                                <option value="Dhaka">Dhaka (37+ Zones)</option>
+                                <option value="Chittagong">Chittagong</option>
+                                <option value="Sylhet">Sylhet</option>
+                                <option value="Rajshahi">Rajshahi</option>
                             </select>
                         </div>
 
                         <div class="filter-group">
-                            <label for="price-range">Max Budget (৳ <span id="price-val">500</span>)</label>
-                            <input type="range" id="price-range" min="50" max="500" step="10" value="500" />
+                            <label for="location-filter">Area / Zone</label>
+                            <select id="location-filter">
+                                <option value="all">All Areas</option>
+                                <option value="Dhanmondi">Dhanmondi</option>
+                                <option value="Gulshan">Gulshan</option>
+                                <option value="Banani">Banani</option>
+                                <option value="Uttara">Uttara</option>
+                                <option value="Mirpur">Mirpur</option>
+                                <option value="Mohammadpur">Mohammadpur</option>
+                                <option value="Bashundhara R/A">Bashundhara R/A</option>
+                                <option value="Baridhara">Baridhara</option>
+                                <option value="Niketan">Niketan</option>
+                                <option value="Mohakhali">Mohakhali</option>
+                                <option value="Farmgate">Farmgate</option>
+                                <option value="Tejgaon">Tejgaon</option>
+                                <option value="Shahbagh">Shahbagh</option>
+                                <option value="Ramna">Ramna</option>
+                                <option value="Motijheel">Motijheel</option>
+                                <option value="Paltan">Paltan</option>
+                                <option value="Kakrail">Kakrail</option>
+                                <option value="Badda">Badda</option>
+                                <option value="Rampura">Rampura</option>
+                                <option value="Khilgaon">Khilgaon</option>
+                                <option value="Khilkhet">Khilkhet</option>
+                                <option value="Aftab Nagar">Aftab Nagar</option>
+                                <option value="Banasree">Banasree</option>
+                                <option value="Wari">Wari</option>
+                                <option value="Lalbagh">Lalbagh</option>
+                                <option value="Old Dhaka">Old Dhaka (Puran Dhaka)</option>
+                                <option value="Jigatola">Jigatola</option>
+                                <option value="Kalabagan">Kalabagan</option>
+                                <option value="Adabor">Adabor</option>
+                                <option value="Shyamoli">Shyamoli</option>
+                                <option value="Agargaon">Agargaon</option>
+                                <option value="Gabtoli">Gabtoli</option>
+                                <option value="Cantonment">Cantonment</option>
+                                <option value="Nikunja">Nikunja</option>
+                                <option value="Kuril">Kuril</option>
+                                <option value="Abdullahpur">Abdullahpur</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="cuisine-filter">Cuisine Type</label>
+                            <select id="cuisine-filter">
+                                <option value="all">All Cuisines</option>
+                                <option value="Biryani">Biryani & Traditional</option>
+                                <option value="Burgers">Burgers & Fast Food</option>
+                                <option value="Chinese">Chinese & Asian</option>
+                                <option value="Coffee">Café & Bakery</option>
+                                <option value="BBQ">Steak & BBQ</option>
+                                <option value="Pizza">Pizza & Pasta</option>
+                                <option value="Desserts">Desserts & Ice Cream</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="price-range">Max Price (৳ <span id="price-val">1500</span>)</label>
+                            <input type="range" id="price-range" min="50" max="1500" step="50" value="1500" />
                         </div>
                     </div>
 
@@ -137,19 +218,34 @@
                 <!-- Category quick filter pills -->
                 <div class="category-pills" id="category-pills">
                     <button class="pill active" data-category="all">All Food</button>
-                    <button class="pill" data-category="Burgers">Burgers</button>
-                    <button class="pill" data-category="Main Course">Main Course</button>
-                    <button class="pill" data-category="Sides">Sides</button>
-                    <button class="pill" data-category="Drinks">Drinks</button>
-                    <button class="pill" data-category="Dessert">Dessert</button>
-                    <button class="pill" data-category="Dumplings">Dumplings</button>
+                    <button class="pill" data-category="Kacchi">🍛 Kacchi</button>
+                    <button class="pill" data-category="Burger">🍔 Burgers</button>
+                    <button class="pill" data-category="Pizza">🍕 Pizza</button>
+                    <button class="pill" data-category="Tehari">🍚 Tehari</button>
+                    <button class="pill" data-category="Chinese">🥟 Chinese</button>
+                    <button class="pill" data-category="BBQ">🍖 BBQ & Kabab</button>
+                    <button class="pill" data-category="Steak">🥩 Steak</button>
+                    <button class="pill" data-category="Coffee">☕ Coffee</button>
+                    <button class="pill" data-category="Desserts">🍰 Desserts</button>
+                    <button class="pill" data-category="Snacks">🍟 Snacks</button>
+                    <button class="pill" data-category="Street Food">🍢 Street Food</button>
                 </div>
 
-                <!-- Explorer Content List -->
+                <!-- Explorer Content Display Container -->
                 <div class="explorer-list-container">
-                    <!-- Restaurant Cards list -->
-                    <div class="restaurant-grid" id="restaurant-grid">
+                    <!-- Interactive Leaflet Map View -->
+                    <div class="map-view-container" id="dhaka-map"></div>
+
+                    <!-- Restaurant Grid View -->
+                    <div class="restaurant-grid hidden" id="restaurant-grid">
                         <!-- Loaded dynamically -->
+                    </div>
+
+                    <!-- Direct Food Search Items Grid View -->
+                    <div class="food-search-container hidden" id="food-search-container">
+                        <div class="menu-items-grid" id="food-search-grid">
+                            <!-- Loaded dynamically -->
+                        </div>
                     </div>
 
                     <!-- Favorites list (hidden by default) -->
@@ -172,7 +268,7 @@
         </div>
     </div>
 
-    <!-- Modal for Restaurant Menu Details -->
+    <!-- Modal for Restaurant Menu Details & Info -->
     <div class="modal-overlay" id="menu-modal">
         <div class="modal-content animate-slide-up">
             <button class="modal-close-btn" id="modal-close-btn" aria-label="Close modal">&times;</button>
@@ -186,6 +282,10 @@
                         <span class="review-count">(<span id="modal-reviews-count">0</span> reviews)</span>
                         <span class="price-indicator" id="modal-price-range">৳৳</span>
                     </div>
+                    <div class="modal-meta-info">
+                        <span class="info-tag">🕒 <span id="modal-hours">10:00 AM - 11:00 PM</span></span>
+                        <span class="info-tag">📞 <span id="modal-contact">+880 1700-000000</span></span>
+                    </div>
                 </div>
                 <div class="restaurant-actions">
                     <button class="action-btn fav-btn" id="modal-fav-btn" title="Add to Favorites">
@@ -194,7 +294,7 @@
                         </svg>
                     </button>
                     <a href="#" target="_blank" class="btn-maps-nav" id="modal-maps-link">
-                        📍 Navigate
+                        📍 Navigate Maps
                     </a>
                 </div>
             </div>
