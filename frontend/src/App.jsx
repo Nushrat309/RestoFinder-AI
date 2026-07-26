@@ -241,18 +241,15 @@ export default function App() {
         throw new Error(errorMsg)
       }
       
-      const data = await res.json()
-      const botResponseText = data.response || 'I did not receive a response. Please try again.'
-      
+      // Initialize empty message for streaming
       const assistantMsg = {
         role: 'assistant',
-        text: botResponseText,
+        text: '',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
       
       setChatHistory(prev => prev.map(chat => {
         if (chat.id === activeChatId) {
-          // Auto-rename chat from "New Chat" on first query
           let title = chat.title
           if (title === 'New Chat' || title === 'Welcome Conversation') {
             title = text.length > 25 ? text.substring(0, 25) + '...' : text
@@ -265,6 +262,59 @@ export default function App() {
         }
         return chat
       }))
+      setTyping(false)
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder('utf-8')
+      let buffer = ''
+      let accumulatedText = ''
+
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          const trimmed = line.trim()
+          if (trimmed.startsWith('data: ')) {
+            const jsonStr = trimmed.slice(6)
+            if (!jsonStr) continue
+            try {
+              const data = JSON.parse(jsonStr)
+              if (data.error) {
+                throw new Error(data.error)
+              }
+              if (data.token) {
+                accumulatedText += data.token
+                
+                setChatHistory(prev => prev.map(chat => {
+                  if (chat.id === activeChatId) {
+                    const msgs = [...chat.messages]
+                    if (msgs.length > 0) {
+                      msgs[msgs.length - 1] = {
+                        ...msgs[msgs.length - 1],
+                        text: accumulatedText
+                      }
+                    }
+                    return {
+                      ...chat,
+                      messages: msgs
+                    }
+                  }
+                  return chat
+                }))
+              }
+            } catch (parseErr) {
+              if (parseErr.message && (parseErr.message.includes('Quota') || parseErr.message.includes('Service Error'))) {
+                throw parseErr
+              }
+            }
+          }
+        }
+      }
     } catch (error) {
       console.error('Chat error:', error)
       let displayError = error.message
@@ -280,9 +330,15 @@ export default function App() {
       
       setChatHistory(prev => prev.map(chat => {
         if (chat.id === activeChatId) {
+          const msgs = [...chat.messages]
+          if (msgs.length > 0 && msgs[msgs.length - 1].role === 'assistant' && msgs[msgs.length - 1].text === '') {
+            msgs[msgs.length - 1] = errorMsg
+          } else {
+            msgs.push(errorMsg)
+          }
           return {
             ...chat,
-            messages: [...chat.messages, errorMsg]
+            messages: msgs
           }
         }
         return chat

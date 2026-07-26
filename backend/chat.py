@@ -220,6 +220,44 @@ def chat(contents: list) -> str:
     return response.text
 
 
+ENABLE_STREAMING = True
+
+
+def chat_stream(contents: list):
+    """
+    Generator yielding token chunks from Gemini Streaming API.
+    """
+    # Get last user prompt to extract intent
+    last_user_msg = ""
+    for msg in reversed(contents):
+        if msg.get("role") == "user":
+            parts = msg.get("parts", [])
+            if parts and isinstance(parts[0], dict):
+                last_user_msg = parts[0].get("text", "")
+            elif parts and isinstance(parts[0], str):
+                last_user_msg = parts[0]
+            break
+
+    # Extract intent & retrieve candidate candidates
+    intent = extract_query_intent(last_user_msg)
+    top_candidates = retrieve_relevant_restaurants(intent, max_results=18)
+    
+    # Build dynamic prompt
+    system_prompt = build_system_prompt(top_candidates)
+
+    response_stream = client.models.generate_content_stream(
+        model="gemini-2.5-flash",
+        contents=contents,
+        config=types.GenerateContentConfig(
+            system_instruction=system_prompt
+        )
+    )
+
+    for chunk in response_stream:
+        if chunk.text:
+            yield chunk.text
+
+
 def main():
     print("🍽️ Welcome to RestoFinder AI (500+ Restaurant Production Directory)")
     print("Type 'exit' to quit.\n")
