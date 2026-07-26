@@ -45,7 +45,7 @@ CITIES_DATA = {
         ("Kuril", 23.8240, 90.4220),
         ("Abdullahpur", 23.8850, 90.3980)
     ],
-    "Chittagong": [
+    "Chattogram": [
         ("Agrabad", 22.3250, 91.8120),
         ("GEC Circle", 22.3580, 91.8210),
         ("Nasirabad", 22.3640, 91.8260),
@@ -64,6 +64,66 @@ CITIES_DATA = {
         ("Kazla", 24.3680, 88.6280),
         ("Motihar", 24.3670, 88.6360),
         ("Boalia", 24.3710, 88.5990)
+    ],
+    "Khulna": [
+        ("Boyra", 22.8400, 89.5410),
+        ("Khalishpur", 22.8550, 89.5350),
+        ("Sonadanga", 22.8250, 89.5530),
+        ("Shibatola", 22.8100, 89.5600)
+    ],
+    "Barishal": [
+        ("Sadar Road", 22.7020, 90.3700),
+        ("Nathullabad", 22.7150, 90.3500),
+        ("C&B Road", 22.6950, 90.3450),
+        ("Band Road", 22.7050, 90.3800)
+    ],
+    "Rangpur": [
+        ("Jahaz Company Mor", 25.7560, 89.2450),
+        ("Dhap", 25.7600, 89.2350),
+        ("Modern Mor", 25.7250, 89.2600),
+        ("Medical Mor", 25.7650, 89.2250)
+    ],
+    "Mymensingh": [
+        ("Ganginarpar", 24.7570, 90.4040),
+        ("Town Hall", 24.7600, 90.4010),
+        ("Charpara", 24.7470, 90.4150),
+        ("Patgola", 24.7400, 90.4250)
+    ],
+    "Cox's Bazar": [
+        ("Kolatoli", 21.4160, 91.9830),
+        ("Sugandha Beach", 21.4310, 91.9720),
+        ("Laboni Beach", 21.4420, 91.9680),
+        ("Inani", 21.2100, 92.0500)
+    ],
+    "Cumilla": [
+        ("Kandirpar", 23.4610, 91.1800),
+        ("Badurtala", 23.4680, 91.1870),
+        ("Jhautala", 23.4650, 91.1730),
+        ("Kotbari", 23.4380, 91.1290)
+    ],
+    "Bogura": [
+        ("Saatmatha", 24.8480, 89.3720),
+        ("Jamilnagar", 24.8350, 89.3650),
+        ("Chelopara", 24.8550, 89.3850),
+        ("Thanthania", 24.8320, 89.3700)
+    ],
+    "Narayanganj": [
+        ("Chashara", 23.6230, 90.4990),
+        ("Shitalakshya", 23.6150, 90.5100),
+        ("Nitayganj", 23.6050, 90.5050),
+        ("Signboard", 23.6800, 90.4900)
+    ],
+    "Gazipur": [
+        ("Board Bazar", 23.9650, 90.3950),
+        ("Chowrasta", 23.9880, 90.3800),
+        ("Tongi", 23.8950, 90.4000),
+        ("Konabari", 24.0150, 90.3150)
+    ],
+    "Jessore": [
+        ("Palbari", 23.1800, 89.2000),
+        ("Doratana", 23.1680, 89.2130),
+        ("Jessore Sadar", 23.1650, 89.2100),
+        ("KhayerTala", 23.1900, 89.1750)
     ]
 }
 

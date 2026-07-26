@@ -33,10 +33,15 @@ def extract_query_intent(user_text: str):
 
     # 1. Detect City
     detected_city = None
-    for city in ALL_CITIES:
-        if city.lower() in text_lower:
-            detected_city = city
-            break
+    if "chittagong" in text_lower:
+        detected_city = "Chattogram"
+    elif "coxs bazar" in text_lower or "cox bazar" in text_lower or "cox's bazar" in text_lower:
+        detected_city = "Cox's Bazar"
+    else:
+        for city in ALL_CITIES:
+            if city.lower() in text_lower:
+                detected_city = city
+                break
 
     # 2. Detect Area
     detected_area = None
@@ -168,7 +173,7 @@ def build_system_prompt(candidates: list) -> str:
     db_summary = json.dumps(candidates, indent=2, ensure_ascii=False)
     
     return f"""
-You are RestoFinder AI, a production-grade restaurant & food discovery platform assistant (covering 500+ restaurants in Dhaka, Chittagong, Sylhet, and Rajshahi).
+You are RestoFinder AI, a production-grade restaurant & food discovery platform assistant covering restaurants across multiple major cities and districts in Bangladesh (including Dhaka, Chattogram, Sylhet, Rajshahi, Khulna, Barishal, Rangpur, Mymensingh, Cox's Bazar, Cumilla, Bogura, Narayanganj, Gazipur, Jessore, etc.).
 
 Here is the retrieved list of most relevant matching restaurants and menu items for the user's request:
 {db_summary}

@@ -29,7 +29,7 @@ except Exception as e:
 @app.get("/")
 def read_root():
     return {
-        "message": "Welcome to RestoFinder AI 500+ Restaurant Discovery API!"
+        "message": "Welcome to RestoFinder AI Restaurant Discovery API!"
     }
 
 
@@ -43,7 +43,7 @@ def health_check():
 
 @app.get("/api/restaurants")
 def get_restaurants(
-    city: Optional[str] = Query(None, description="Filter by City (e.g. Dhaka, Chittagong, Sylhet, Rajshahi)"),
+    city: Optional[str] = Query(None, description="Filter by City (e.g. Dhaka, Chattogram, Sylhet, Rajshahi)"),
     area: Optional[str] = Query(None, description="Filter by Area (e.g. Dhanmondi, Gulshan, Banani, Uttara)"),
     search: Optional[str] = Query(None, description="Search query for restaurant name, cuisine, or dish"),
     max_price: Optional[int] = Query(None, description="Maximum budget price limit"),
