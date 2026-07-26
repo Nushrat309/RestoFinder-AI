@@ -9,6 +9,8 @@ from google.genai import types
 
 load_dotenv()
 
+ENABLE_STREAMING = os.getenv("ENABLE_STREAMING", "true").lower() == "true"
+
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Load database on module startup
