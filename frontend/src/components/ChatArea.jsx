@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react'
 import { Send, Image, Mic, Copy, Check, RotateCcw } from 'lucide-react'
 
 // Custom parsing function for message bubbles
-const parseMessageText = (text, onOpenMenuModal) => {
+const parseMessageText = (text, onOpenMenuModal, showCursor = false) => {
   if (!text) return null
   
   const lines = text.split('\n')
@@ -84,6 +84,9 @@ const parseMessageText = (text, onOpenMenuModal) => {
     return (
       <p key={`line-${lineIdx}`} className="mb-1.5 last:mb-0 leading-relaxed text-sm">
         {elements}
+        {showCursor && lineIdx === lines.length - 1 && (
+          <span className="inline-block w-1.5 h-4 bg-accent ml-1 animate-pulse align-middle rounded-sm" />
+        )}
       </p>
     )
   })
@@ -189,7 +192,15 @@ export default function ChatArea({
                   `}>
                     
                     {/* Rendered Text Chunks */}
-                    {parseMessageText(msg.text, onOpenMenuModal)}
+                    {msg.text ? (
+                      parseMessageText(msg.text, onOpenMenuModal, typing && idx === messages.length - 1 && !isUser)
+                    ) : (
+                      <div className="flex items-center gap-1.5 py-1.5">
+                        <span className="w-1.5 h-1.5 bg-text-secondary rounded-full animate-bounce" style={{ animationDelay: '-0.32s' }}></span>
+                        <span className="w-1.5 h-1.5 bg-text-secondary rounded-full animate-bounce" style={{ animationDelay: '-0.16s' }}></span>
+                        <span className="w-1.5 h-1.5 bg-text-secondary rounded-full animate-bounce"></span>
+                      </div>
+                    )}
 
                     {/* Quick Assistant Actions (Copy / Regenerate) */}
                     {!isUser && (
@@ -229,7 +240,7 @@ export default function ChatArea({
         )}
 
         {/* Typing Indicator */}
-        {typing && (
+        {typing && messages[messages.length - 1]?.role !== 'assistant' && (
           <div className="flex items-start gap-3.5 max-w-[85%] self-start animate-fade-in mr-auto">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm bg-bg-secondary border border-border-color text-text-secondary flex-shrink-0">
               🤖

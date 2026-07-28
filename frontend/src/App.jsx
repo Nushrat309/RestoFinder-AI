@@ -268,7 +268,6 @@ export default function App() {
         }
         return chat
       }))
-      setTyping(false)
 
       const reader = res.body.getReader()
       const decoder = new TextDecoder('utf-8')
