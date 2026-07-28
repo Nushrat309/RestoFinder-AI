@@ -446,6 +446,7 @@ export default function App() {
         onOpenAuth={(mode) => setAuthModalMode(mode)}
         mobilePane={mobilePane}
         setMobilePane={setMobilePane}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
       
       <div className="flex flex-1 overflow-hidden w-full relative">
@@ -482,6 +483,7 @@ export default function App() {
             ${mobilePane === 'explorer' ? 'flex' : 'hidden'} md:flex`}
           >
             <ExplorerPane 
+              theme={theme}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               restaurants={restaurants}
@@ -545,7 +547,10 @@ export default function App() {
           theme={theme}
           setTheme={setTheme}
           city={city}
-          setCity={setCity}
+          setCity={(val) => {
+            setCity(val)
+            setLocation('all')
+          }}
           maxPrice={maxPrice}
           setMaxPrice={setMaxPrice}
           onClearChats={handleClearChats}

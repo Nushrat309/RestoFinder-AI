@@ -35,14 +35,13 @@ const categories = [
 ]
 
 // React Wrapper for Leaflet Map
-function MapView({ filteredRestaurants, onExploreMenu }) {
+function MapView({ filteredRestaurants, onExploreMenu, theme }) {
   const mapContainerRef = useRef(null)
   const mapRef = useRef(null)
   const markersRef = useRef([])
 
   useEffect(() => {
-    // Determine active theme (from document body class)
-    const isLightTheme = document.documentElement.classList.contains('light')
+    const isLightTheme = theme === 'light'
     
     if (!mapRef.current && mapContainerRef.current) {
       const map = L.map(mapContainerRef.current).setView([23.7803, 90.4125], 12)
@@ -68,7 +67,7 @@ function MapView({ filteredRestaurants, onExploreMenu }) {
   // Sync theme tiles
   useEffect(() => {
     if (!mapRef.current) return
-    const isLightTheme = document.documentElement.classList.contains('light')
+    const isLightTheme = theme === 'light'
     
     // Remove existing tile layer
     mapRef.current.eachLayer((layer) => {
@@ -84,7 +83,7 @@ function MapView({ filteredRestaurants, onExploreMenu }) {
     L.tileLayer(tilesUrl, {
       attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
     }).addTo(mapRef.current)
-  }, [filteredRestaurants]) // Re-run tile verification on filter changes
+  }, [filteredRestaurants, theme]) // Re-run tile verification on filter changes or theme changes
 
   // Update Markers
   useEffect(() => {
@@ -140,6 +139,7 @@ function MapView({ filteredRestaurants, onExploreMenu }) {
 }
 
 export default function ExplorerPane({
+  theme,
   activeTab,
   setActiveTab,
   restaurants,
@@ -444,6 +444,7 @@ export default function ExplorerPane({
                 <MapView 
                   filteredRestaurants={filteredRestaurants} 
                   onExploreMenu={onExploreMenu} 
+                  theme={theme}
                 />
               </div>
             )}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Sun, Moon, LogIn, User, LogOut, MessageSquare, Map } from 'lucide-react'
+import { Menu, Sun, Moon, LogIn, User, LogOut, MessageSquare, Map } from 'lucide-react'
 
 export default function TopNav({
   theme,
@@ -8,7 +8,8 @@ export default function TopNav({
   onLogout,
   onOpenAuth,
   mobilePane,
-  setMobilePane
+  setMobilePane,
+  onToggleSidebar
 }) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -21,6 +22,14 @@ export default function TopNav({
       
       {/* Brand Logo & Name */}
       <div className="flex items-center gap-3">
+        <button
+          onClick={onToggleSidebar}
+          className="p-2.5 rounded-xl bg-bg-primary/50 hover:bg-bg-primary border border-border-color text-text-secondary hover:text-text-primary transition-all duration-200"
+          title="Toggle Sidebar"
+        >
+          <Menu size={16} />
+        </button>
+
         <span className="text-xl bg-accent/10 border border-accent/25 p-2 rounded-xl">
           🍽️
         </span>
