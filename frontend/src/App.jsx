@@ -5,6 +5,8 @@ import ChatArea from './components/ChatArea'
 import ExplorerPane from './components/ExplorerPane'
 import MenuModal from './components/MenuModal'
 import AuthModal from './components/AuthModal'
+import SettingsModal from './components/SettingsModal'
+import HelpFAQModal from './components/HelpFAQModal'
 
 const BASE_URL = 'http://localhost:8000'
 
@@ -30,6 +32,10 @@ export default function App() {
   
   // Restaurant Details Modal
   const [selectedRestId, setSelectedRestId] = useState(null)
+  
+  // Settings & Help Modals state
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isHelpOpen, setIsHelpOpen] = useState(false)
   
   // Restaurants database cache
   const [restaurants, setRestaurants] = useState([])
@@ -394,6 +400,41 @@ export default function App() {
     setUser(null)
     localStorage.removeItem('restofinder_user')
   }
+
+  const handleClearChats = () => {
+    const defaultChat = {
+      id: 'default',
+      title: 'Welcome Conversation',
+      messages: [
+        {
+          role: 'assistant',
+          text: 'Welcome! I am **RestoFinder AI**, your Restaurant & Food Assistant. Ask me for recommendations like *"Best Kacchi Biryani under ৳400 in Dhaka"* or search restaurants on the interactive Map! 🗺️🍔🍛',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]
+    }
+    setChatHistory([defaultChat])
+    setActiveChatId('default')
+  }
+
+  const handleResetAll = () => {
+    localStorage.removeItem('theme')
+    localStorage.removeItem('restofinder_user')
+    localStorage.removeItem('restofinder_favs')
+    setTheme('dark')
+    setUser(null)
+    setFavorites({ restaurants: [], items: [] })
+    setCity('all')
+    setLocation('all')
+    setCuisine('all')
+    setMaxPrice(1500)
+    setVegOnly(false)
+    setGlutenFree(false)
+    setInStock(false)
+    setActiveCategory('all')
+    handleClearChats()
+    setIsSettingsOpen(false)
+  }
   
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-bg-primary text-text-primary transition-all duration-300">
@@ -418,6 +459,8 @@ export default function App() {
           onSelectChat={handleSelectChat}
           onDeleteChat={handleDeleteChat}
           onNewChat={handleStartNewChat}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenHelp={() => setIsHelpOpen(true)}
         />
         
         {/* Main Workspace (Split Pane layout) */}
@@ -493,6 +536,28 @@ export default function App() {
             setAuthModalMode(null)
           }}
           user={user}
+        />
+      )}
+
+      {/* Settings Modal */}
+      {isSettingsOpen && (
+        <SettingsModal 
+          onClose={() => setIsSettingsOpen(false)}
+          theme={theme}
+          setTheme={setTheme}
+          city={city}
+          setCity={setCity}
+          maxPrice={maxPrice}
+          setMaxPrice={setMaxPrice}
+          onClearChats={handleClearChats}
+          onResetAll={handleResetAll}
+        />
+      )}
+
+      {/* Help & FAQ Modal */}
+      {isHelpOpen && (
+        <HelpFAQModal 
+          onClose={() => setIsHelpOpen(false)}
         />
       )}
     </div>

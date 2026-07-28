@@ -8,7 +8,9 @@ export default function Sidebar({
   activeChatId,
   onSelectChat,
   onDeleteChat,
-  onNewChat
+  onNewChat,
+  onOpenSettings,
+  onOpenHelp
 }) {
   return (
     <>
@@ -97,12 +99,18 @@ export default function Sidebar({
 
         {/* Footer Settings & Options */}
         <div className="p-3 border-t border-border-color space-y-1 bg-bg-secondary">
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-bg-primary/50 transition-colors">
+          <button 
+            onClick={onOpenSettings}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-bg-primary/50 transition-colors"
+          >
             <Settings size={16} />
             <span>Settings</span>
           </button>
           
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-bg-primary/50 transition-colors">
+          <button 
+            onClick={onOpenHelp}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-bg-primary/50 transition-colors"
+          >
             <HelpCircle size={16} />
             <span>Help & FAQ</span>
           </button>
