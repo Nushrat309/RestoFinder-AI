@@ -1,4 +1,4 @@
-# RestoFinder AI 🍽️🤖
+# RestoFinder AI 
 
 RestoFinder AI is a production-grade, interactive restaurant discovery and food explorer application covering major cities in Bangladesh (including Dhaka, Chattogram, Sylhet, Rajshahi, and more). Inspired by modern ChatGPT-style chat interfaces, it integrates a smart LLM assistant with an interactive map pane to offer a seamless dining search experience.
 
@@ -9,7 +9,7 @@ The platform is powered by the **Google Gemini 2.5 Flash** model via the officia
 ##  Core Features
 
 - **ChatGPT-style Assistant**: A collapsible navigation sidebar for managing chat threads (create new chats, name chats based on prompt, delete chats, clear history).
-- ⚡ **Real-Time Token Streaming**: High-performance SSE (Server-Sent Events) streaming that lets you watch the AI response type out token-by-token. Supports fallback to non-streaming if configured.
+-  **Real-Time Token Streaming**: High-performance SSE (Server-Sent Events) streaming that lets you watch the AI response type out token-by-token. Supports fallback to non-streaming if configured.
 -  **Location & Intent-Aware Matching**: 
   - An intelligent local keyword and entity-extraction pipeline parsing your query (extracting city, area/neighborhood, price budget, rating limits, cuisines, dishes).
   - A retrieval-scoring mechanism that filters and ranks candidates from a database of **500+ restaurants**, injecting the top matches into the system instructions to prevent LLM hallucinations.
