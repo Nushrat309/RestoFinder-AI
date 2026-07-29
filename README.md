@@ -6,18 +6,18 @@ The platform is powered by the **Google Gemini 2.5 Flash** model via the officia
 
 ---
 
-## 🌟 Core Features
+##  Core Features
 
-- 💬 **ChatGPT-style Assistant**: A collapsible navigation sidebar for managing chat threads (create new chats, name chats based on prompt, delete chats, clear history).
+- **ChatGPT-style Assistant**: A collapsible navigation sidebar for managing chat threads (create new chats, name chats based on prompt, delete chats, clear history).
 - ⚡ **Real-Time Token Streaming**: High-performance SSE (Server-Sent Events) streaming that lets you watch the AI response type out token-by-token. Supports fallback to non-streaming if configured.
-- 🎯 **Location & Intent-Aware Matching**: 
+-  **Location & Intent-Aware Matching**: 
   - An intelligent local keyword and entity-extraction pipeline parsing your query (extracting city, area/neighborhood, price budget, rating limits, cuisines, dishes).
   - A retrieval-scoring mechanism that filters and ranks candidates from a database of **500+ restaurants**, injecting the top matches into the system instructions to prevent LLM hallucinations.
-- 🗺️ **Interactive Leaflet Map & Explorer**:
+-  **Interactive Leaflet Map & Explorer**:
   - Live map rendering of restaurants.
   - Interactive filters for City, Area, Cuisine, budget price limits, and dietary options (Veg, Gluten-Free, In-stock).
   - Interactive map markers, detail links, and tabs for **Map view**, **Restaurants list**, **Food grid**, and **Favorites**.
-- 🍔 **Detailed Menu & Interactive Modals**:
+-  **Detailed Menu & Interactive Modals**:
   - **Menu Modal**: Explore detailed menus of restaurants, categorize dishes, and check pricing in BDT (৳).
   - **Auth Modal**: Register, log in, or manage your user profile (session persistent via `localStorage`).
   - **Settings Modal**: Customize preferences (default city, max price limit), toggle Light/Dark themes, clear chat history, or perform a full factory reset.
@@ -25,7 +25,7 @@ The platform is powered by the **Google Gemini 2.5 Flash** model via the officia
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 - **Framework**: React 18 (Vite-based SPA)
@@ -43,7 +43,7 @@ The platform is powered by the **Google Gemini 2.5 Flash** model via the officia
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```text
 RestoFinder-AI/
@@ -83,7 +83,7 @@ RestoFinder-AI/
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### 1. Prerequisites
 - **Python**: Version 3.10 or higher
@@ -142,7 +142,7 @@ The frontend application will be running at `http://localhost:3000` (or the port
 
 ---
 
-## 🔌 API Endpoints
+##  API Endpoints
 
 ### `GET /`
 Returns a general welcome message.
@@ -168,7 +168,7 @@ Forces SSE streaming response for the conversation history.
 
 ---
 
-## 💡 Example Prompt Queries to Try
+## Example Prompt Queries to Try
 
 - *"Find me a good Kacchi place under ৳400 in Dhaka"*
 - *"Where can I get high-rated burgers in Banani?"*
@@ -177,5 +177,5 @@ Forces SSE streaming response for the conversation history.
 
 ---
 
-## 🔒 License
+## License
 This project is open-source and available under the MIT License.
