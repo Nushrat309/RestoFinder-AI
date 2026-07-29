@@ -3,8 +3,9 @@ from pathlib import Path
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from chat import chat
+import chat
 
 app = FastAPI(title="RestoFinder AI API", version="2.0.0")
 
@@ -29,7 +30,7 @@ except Exception as e:
 @app.get("/")
 def read_root():
     return {
-        "message": "Welcome to RestoFinder AI 500+ Restaurant Discovery API!"
+        "message": "Welcome to RestoFinder AI Restaurant Discovery API!"
     }
 
 
@@ -43,7 +44,7 @@ def health_check():
 
 @app.get("/api/restaurants")
 def get_restaurants(
-    city: Optional[str] = Query(None, description="Filter by City (e.g. Dhaka, Chittagong, Sylhet, Rajshahi)"),
+    city: Optional[str] = Query(None, description="Filter by City (e.g. Dhaka, Chattogram, Sylhet, Rajshahi)"),
     area: Optional[str] = Query(None, description="Filter by Area (e.g. Dhanmondi, Gulshan, Banani, Uttara)"),
     search: Optional[str] = Query(None, description="Search query for restaurant name, cuisine, or dish"),
     max_price: Optional[int] = Query(None, description="Maximum budget price limit"),
@@ -111,12 +112,12 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     contents: list[ChatMessage]
+    stream: Optional[bool] = None
 
 
-@app.post("/chat")
-def chat_endpoint(request: ChatRequest):
+def format_chat_contents(contents: list[ChatMessage]) -> list[dict]:
     api_contents = []
-    for msg in request.contents:
+    for msg in contents:
         parts_list = []
         for part in msg.parts:
             parts_list.append({"text": part.text})
@@ -124,20 +125,60 @@ def chat_endpoint(request: ChatRequest):
             "role": msg.role,
             "parts": parts_list
         })
-    
+    return api_contents
+
+
+def sse_event_generator(api_contents: list[dict]):
     try:
-        response = chat(api_contents)
-        return {
-            "response": response
-        }
+        if not getattr(chat, "ENABLE_STREAMING", True):
+            response_text = chat.chat(api_contents)
+            yield f"data: {json.dumps({'token': response_text, 'done': False})}\n\n"
+        else:
+            for token in chat.chat_stream(api_contents):
+                yield f"data: {json.dumps({'token': token, 'done': False})}\n\n"
+        yield f"data: {json.dumps({'token': '', 'done': True})}\n\n"
     except Exception as e:
         error_msg = str(e)
         if "RESOURCE_EXHAUSTED" in error_msg or "quota" in error_msg.lower():
-            raise HTTPException(
-                status_code=429, 
-                detail="Gemini API Quota Exceeded. Please try again in a few moments."
-            )
-        raise HTTPException(status_code=500, detail=f"AI Service Error: {error_msg}")
+            err_detail = "Gemini API Quota Exceeded. Please try again in a few moments."
+        else:
+            err_detail = f"AI Service Error: {error_msg}"
+        yield f"data: {json.dumps({'error': err_detail, 'done': True})}\n\n"
+
+
+@app.post("/chat")
+def chat_endpoint(request: ChatRequest):
+    api_contents = format_chat_contents(request.contents)
+    
+    enable_streaming = getattr(chat, "ENABLE_STREAMING", True)
+    if request.stream is False or not enable_streaming:
+        try:
+            response = chat.chat(api_contents)
+            return {
+                "response": response
+            }
+        except Exception as e:
+            error_msg = str(e)
+            if "RESOURCE_EXHAUSTED" in error_msg or "quota" in error_msg.lower():
+                raise HTTPException(
+                    status_code=429, 
+                    detail="Gemini API Quota Exceeded. Please try again in a few moments."
+                )
+            raise HTTPException(status_code=500, detail=f"AI Service Error: {error_msg}")
+
+    return StreamingResponse(
+        sse_event_generator(api_contents),
+        media_type="text/event-stream"
+    )
+
+
+@app.post("/chat/stream")
+def chat_stream_endpoint(request: ChatRequest):
+    api_contents = format_chat_contents(request.contents)
+    return StreamingResponse(
+        sse_event_generator(api_contents),
+        media_type="text/event-stream"
+    )
 
 
 if __name__ == "__main__":

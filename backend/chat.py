@@ -9,6 +9,8 @@ from google.genai import types
 
 load_dotenv()
 
+ENABLE_STREAMING = os.getenv("ENABLE_STREAMING", "true").lower() == "true"
+
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Load database on module startup
@@ -33,10 +35,15 @@ def extract_query_intent(user_text: str):
 
     # 1. Detect City
     detected_city = None
-    for city in ALL_CITIES:
-        if city.lower() in text_lower:
-            detected_city = city
-            break
+    if "chittagong" in text_lower:
+        detected_city = "Chattogram"
+    elif "coxs bazar" in text_lower or "cox bazar" in text_lower or "cox's bazar" in text_lower:
+        detected_city = "Cox's Bazar"
+    else:
+        for city in ALL_CITIES:
+            if city.lower() in text_lower:
+                detected_city = city
+                break
 
     # 2. Detect Area
     detected_area = None
@@ -168,7 +175,7 @@ def build_system_prompt(candidates: list) -> str:
     db_summary = json.dumps(candidates, indent=2, ensure_ascii=False)
     
     return f"""
-You are RestoFinder AI, a production-grade restaurant & food discovery platform assistant (covering 500+ restaurants in Dhaka, Chittagong, Sylhet, and Rajshahi).
+You are RestoFinder AI, a production-grade restaurant & food discovery platform assistant covering restaurants across multiple major cities and districts in Bangladesh (including Dhaka, Chattogram, Sylhet, Rajshahi, Khulna, Barishal, Rangpur, Mymensingh, Cox's Bazar, Cumilla, Bogura, Narayanganj, Gazipur, Jessore, etc.).
 
 Here is the retrieved list of most relevant matching restaurants and menu items for the user's request:
 {db_summary}
@@ -213,6 +220,44 @@ def chat(contents: list) -> str:
     )
 
     return response.text
+
+
+ENABLE_STREAMING = True
+
+
+def chat_stream(contents: list):
+    """
+    Generator yielding token chunks from Gemini Streaming API.
+    """
+    # Get last user prompt to extract intent
+    last_user_msg = ""
+    for msg in reversed(contents):
+        if msg.get("role") == "user":
+            parts = msg.get("parts", [])
+            if parts and isinstance(parts[0], dict):
+                last_user_msg = parts[0].get("text", "")
+            elif parts and isinstance(parts[0], str):
+                last_user_msg = parts[0]
+            break
+
+    # Extract intent & retrieve candidate candidates
+    intent = extract_query_intent(last_user_msg)
+    top_candidates = retrieve_relevant_restaurants(intent, max_results=18)
+    
+    # Build dynamic prompt
+    system_prompt = build_system_prompt(top_candidates)
+
+    response_stream = client.models.generate_content_stream(
+        model="gemini-2.5-flash",
+        contents=contents,
+        config=types.GenerateContentConfig(
+            system_instruction=system_prompt
+        )
+    )
+
+    for chunk in response_stream:
+        if chunk.text:
+            yield chunk.text
 
 
 def main():
